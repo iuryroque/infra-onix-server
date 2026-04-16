@@ -1,0 +1,81 @@
+pipeline {
+    agent any
+
+    environment {
+        COMPOSE_FILE = 'docker-compose.yml'
+        DOCKER_REGISTRY = 'registry.triadevsolutions.com.br'
+    }
+
+    options {
+        buildDiscarder(logRotator(numToKeepStr: '10'))
+        timeout(time: 30, unit: 'MINUTES')
+    }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                script {
+                    echo "Checking out source code..."
+                    checkout scm
+                }
+            }
+        }
+
+        stage('Load Environment') {
+            steps {
+                script {
+                    echo "Loading environment variables..."
+                    def envFile = readFile('01-edge/.env').trim()
+                    envFile.split('\n').each { line ->
+                        if (line && !line.startsWith('#')) {
+                            def parts = line.split('=', 2)
+                            if (parts.length == 2) {
+                                env[parts[0].trim()] = parts[1].trim()
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        stage('Build error-page-404') {
+            steps {
+                script {
+                    echo "Building error-page-404 image..."
+                    dir('01-edge/nginx-404') {
+                        sh "docker build -t error-page-404:latest ."
+                    }
+                }
+            }
+        }
+
+        stage('Deploy 01-edge') {
+            steps {
+                script {
+                    echo "Deploying 01-edge services..."
+                    dir('01-edge') {
+                        sh "docker-compose up -d --remove-orphans"
+                    }
+                }
+            }
+        }
+
+        stage('Verify Deployment') {
+            steps {
+                script {
+                    echo "Verifying services..."
+                    sh "docker ps --filter \"name=traefik\" --filter \"name=cloudflared\" --format \"table {{.Names}}\\t{{.Status}}\""
+                }
+            }
+        }
+    }
+
+    post {
+        success {
+            echo "01-edge deployed successfully!"
+        }
+        failure {
+            echo "Deployment failed!"
+        }
+    }
+}

@@ -13,38 +13,12 @@ networks:
 # VOLUMES
 # -----------------------------------------------------------------------------
 volumes:
-  gitea_data:
-    name: modelcode_gitea_data
-  registry_data:
-    name: modelcode_registry_data
-  jenkins_data:
-    name: modelcode_jenkins_data
-  # Volume novo para o Banco de Dados
-  postgres_data:
-    name: modelcode_postgres_data
-  # Volume para o Túnel (opcional, se quiser persistir certs)
   cloudflared_data:
     name: modelcode_cloudflared_data
 
 services:
   # -------------------------------------------------------
-  # 1. BANCO DE DADOS (POSTGRES) - NOVO
-  # -------------------------------------------------------
-  db:
-    image: postgres:15-alpine
-    container_name: modelcode-db
-    restart: always
-    environment:
-      - POSTGRES_USER=${POSTGRES_USER}
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
-      - POSTGRES_DB=${POSTGRES_DB}
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-    networks:
-      - devops-net
-
-  # -------------------------------------------------------
-  # 2. O TÚNEL (CLOUDFLARED)
+  # 1. O TÚNEL (CLOUDFLARED)
   # -------------------------------------------------------
   cloudflared:
     image: cloudflare/cloudflared:latest
@@ -58,7 +32,7 @@ services:
       - apps-net
 
   # -------------------------------------------------------
-  # 3. O PORTEIRO (TRAEFIK)
+  # 2. O PORTEIRO (TRAEFIK)
   # -------------------------------------------------------
   traefik:
     image: traefik:v2.10
@@ -69,11 +43,11 @@ services:
       - "--providers.docker=true"
       - "--providers.docker.exposedbydefault=false"
       - "--entrypoints.web.address=:80"
-      
-      # Plugins e Middlewares (Configurados anteriormente)
+
+      # Plugins e Middlewares
       - "--experimental.plugins.blockpath.modulename=github.com/traefik/plugin-blockpath"
       - "--experimental.plugins.blockpath.version=v0.2.1"
-    
+
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
     networks:
@@ -83,11 +57,10 @@ services:
       - "traefik.enable=true"
       - "traefik.http.routers.dashboard.rule=Host(`${TRAEFIK_DOMAIN}`)"
       - "traefik.http.routers.dashboard.service=api@internal"
-      
-      # Autenticação (Sua senha gerada anteriormente com $$)
-      # Ex: admin:$$2y$$05$$...
+
+      # Autenticação
       - "traefik.http.middlewares.modelcode-auth.basicauth.users=${TRAEFIK_AUTH_USERS}"
-      
+
       # Middlewares de Otimização
       - "traefik.http.middlewares.modelcode-compress.compress=true"
       - "traefik.http.middlewares.modelcode-ratelimit.ratelimit.average=100"
@@ -103,125 +76,7 @@ services:
       - "traefik.http.routers.dashboard.middlewares=modelcode-auth,modelcode-compress"
 
   # -------------------------------------------------------
-  # 4. GITEA (Configurado para Postgres)
-  # -------------------------------------------------------
-  gitea:
-    image: gitea/gitea:latest
-    container_name: gitea
-    restart: always
-    environment:
-      - USER_UID=${USER_UID}
-      - USER_GID=${USER_GID}
-      - APP_NAME=${APP_NAME}
-      # Conexão com o Postgres
-      - GITEA__database__DB_TYPE=${GITEA_DB_TYPE}
-      - GITEA__database__HOST=${GITEA_DB_HOST}
-      - GITEA__database__NAME=${GITEA_DB_NAME}
-      - GITEA__database__USER=${GITEA_DB_USER}
-      - GITEA__database__PASSWD=${GITEA_DB_PASSWD}
-    ports:
-      - "3000:3000"
-      - "2222:22"
-    volumes:
-      - gitea_data:/data
-      - /etc/timezone:/etc/timezone:ro
-      - /etc/localtime:/etc/localtime:ro
-    networks:
-      - devops-net
-    depends_on:
-      - db
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.gitea.rule=Host(`${GITEA_DOMAIN}`)"
-      - "traefik.http.services.gitea.loadbalancer.server.port=3000"
-      - "traefik.http.routers.gitea.middlewares=modelcode-compress,error-pages-404"
-
-  # -------------------------------------------------------
-  # 5. REGISTRY
-  # -------------------------------------------------------
-  registry:
-    image: registry:2
-    container_name: registry
-    restart: always
-    ports:
-      - "5000:5000"
-    volumes:
-      - registry_data:/var/lib/registry
-    networks:
-      - devops-net
-
-  # -------------------------------------------------------
-  # 6. JENKINS (CI/CD)
-  # -------------------------------------------------------
-  jenkins:
-    image: jenkins/jenkins:lts-jdk17
-    container_name: jenkins
-    restart: always
-    environment:
-      # Ajuste conforme a RAM da VM
-      - JAVA_OPTS=-Xms256m -Xmx1024m
-    volumes:
-      - jenkins_data:/var/jenkins_home
-    networks:
-      - devops-net
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.jenkins.rule=Host(`${JENKINS_DOMAIN}`)"
-      - "traefik.http.services.jenkins.loadbalancer.server.port=8080"
-      - "traefik.http.routers.jenkins.middlewares=modelcode-compress,error-pages-404"
-
-  # -------------------------------------------------------
-  # 7. GIT SERVICE (API de Integração com Gitea)
-  # -------------------------------------------------------
-  git-service:
-    build:
-      context: ./services/git-service
-    container_name: git-service
-    restart: always
-    environment:
-      - PORT=3000
-      - GITEA_BASE_URL=http://gitea:3000
-      - GITEA_ADMIN_TOKEN=${GITEA_ADMIN_TOKEN}
-      - GIT_CLONE_BASE_URL=${GIT_CLONE_BASE_URL}
-    networks:
-      - devops-net
-    depends_on:
-      - gitea
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.git-service.rule=Host(`${GIT_SERVICE_DOMAIN}`)"
-      - "traefik.http.services.git-service.loadbalancer.server.port=3000"
-      - "traefik.http.routers.git-service.middlewares=modelcode-compress,error-pages-404"
-
-  # -------------------------------------------------------
-  # 8. ORCHESTRATOR SERVICE (SSE + Jenkins + Docker Deploy)
-  # -------------------------------------------------------
-  orchestrator-service:
-    build:
-      context: ./services/orchestrator-service
-    container_name: orchestrator-service
-    restart: always
-    environment:
-      - PORT=3000
-      - JENKINS_BASE_URL=${JENKINS_BASE_URL}
-      - JENKINS_USER=${JENKINS_USER}
-      - JENKINS_API_TOKEN=${JENKINS_API_TOKEN}
-      - JENKINS_JOB_NAME=${JENKINS_JOB_NAME}
-      - APPS_NETWORK_NAME=${APPS_NETWORK_NAME}
-      - BASE_DOMAIN=${BASE_DOMAIN}
-      - TRAEFIK_DEFAULT_MIDDLEWARES=${TRAEFIK_DEFAULT_MIDDLEWARES}
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-    networks:
-      - devops-net
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.orchestrator.rule=Host(`${ORCHESTRATOR_DOMAIN}`)"
-      - "traefik.http.services.orchestrator.loadbalancer.server.port=3000"
-      - "traefik.http.routers.orchestrator.middlewares=modelcode-compress,error-pages-404"
-
-  # -------------------------------------------------------
-  # 9. PÁGINA 404 (ERROR PAGE)
+  # 3. PÁGINA 404 (ERROR PAGE)
   # -------------------------------------------------------
   error-page-404:
     build:

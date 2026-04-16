@@ -65,3 +65,6 @@ services:
       - "traefik.http.services.error-page-404.loadbalancer.server.port=80"
       - "traefik.http.routers.error-page-404.rule=Host(`404.triadevsolutions.com.br`)"
       - "traefik.http.routers.error-page-404.service=error-page-404"
+      - "traefik.http.routers.catch-all.rule=HostRegexp(`{.+}`)"
+      - "traefik.http.routers.catch-all.priority=1"
+      - "traefik.http.routers.catch-all.middlewares=error-pages-404"

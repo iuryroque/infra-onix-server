@@ -51,9 +51,10 @@ services:
       - "traefik.http.middlewares.error-pages-404.errors.status=404"
       - "traefik.http.middlewares.error-pages-404.errors.service=error-page-404"
       - "traefik.http.middlewares.error-pages-404.errors.query=/{status}.html"
-      - "traefik.http.routers.catch-all.rule=HostRegexp(`{.+}`)"
+      - "traefik.http.routers.catch-all.rule=HostRegexp(`{any:.*}`)"
       - "traefik.http.routers.catch-all.priority=1"
       - "traefik.http.routers.catch-all.middlewares=error-pages-404"
+      - "traefik.http.routers.catch-all.entrypoints=web"
 
   error-page-404:
     build:

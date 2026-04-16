@@ -42,6 +42,7 @@ services:
       - "traefik.enable=true"
       - "traefik.http.routers.dashboard.rule=Host(`${TRAEFIK_DOMAIN}`)"
       - "traefik.http.routers.dashboard.service=api@internal"
+      - "traefik.http.routers.dashboard.middlewares=modelcode-auth,modelcode-compress"
       - "traefik.http.middlewares.modelcode-auth.basicauth.users=${TRAEFIK_AUTH_USERS}"
       - "traefik.http.middlewares.modelcode-compress.compress=true"
       - "traefik.http.middlewares.modelcode-ratelimit.ratelimit.average=100"
@@ -50,7 +51,6 @@ services:
       - "traefik.http.middlewares.error-pages-404.errors.status=404"
       - "traefik.http.middlewares.error-pages-404.errors.service=error-page-404"
       - "traefik.http.middlewares.error-pages-404.errors.query=/{status}.html"
-      - "traefik.http.routers.dashboard.middlewares=modelcode-auth,modelcode-compress"
 
   error-page-404:
     build:
@@ -62,8 +62,4 @@ services:
       - apps-net
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.error-page-404.rule=Host(`${ERROR_404_DOMAIN}`)"
       - "traefik.http.services.error-page-404.loadbalancer.server.port=80"
-      - "traefik.http.routers.catch-all.rule=HostRegexp(`{.+}`)"
-      - "traefik.http.routers.catch-all.priority=1"
-      - "traefik.http.routers.catch-all.middlewares=error-pages-404"

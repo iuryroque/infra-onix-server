@@ -1,25 +1,16 @@
-version: '3.8'
+version: '3.9'
 
-# -----------------------------------------------------------------------------
-# REDES
-# -----------------------------------------------------------------------------
 networks:
   devops-net:
     driver: bridge
   apps-net:
     driver: bridge
 
-# -----------------------------------------------------------------------------
-# VOLUMES
-# -----------------------------------------------------------------------------
 volumes:
   cloudflared_data:
     name: modelcode_cloudflared_data
 
 services:
-  # -------------------------------------------------------
-  # 1. O TÚNEL (CLOUDFLARED)
-  # -------------------------------------------------------
   cloudflared:
     image: cloudflare/cloudflared:latest
     container_name: cloudflared
@@ -31,9 +22,6 @@ services:
       - devops-net
       - apps-net
 
-  # -------------------------------------------------------
-  # 2. O PORTEIRO (TRAEFIK)
-  # -------------------------------------------------------
   traefik:
     image: traefik:v2.10
     container_name: traefik
@@ -43,11 +31,8 @@ services:
       - "--providers.docker=true"
       - "--providers.docker.exposedbydefault=false"
       - "--entrypoints.web.address=:80"
-
-      # Plugins e Middlewares
       - "--experimental.plugins.blockpath.modulename=github.com/traefik/plugin-blockpath"
       - "--experimental.plugins.blockpath.version=v0.2.1"
-
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
     networks:
@@ -57,27 +42,16 @@ services:
       - "traefik.enable=true"
       - "traefik.http.routers.dashboard.rule=Host(`${TRAEFIK_DOMAIN}`)"
       - "traefik.http.routers.dashboard.service=api@internal"
-
-      # Autenticação
       - "traefik.http.middlewares.modelcode-auth.basicauth.users=${TRAEFIK_AUTH_USERS}"
-
-      # Middlewares de Otimização
       - "traefik.http.middlewares.modelcode-compress.compress=true"
       - "traefik.http.middlewares.modelcode-ratelimit.ratelimit.average=100"
       - "traefik.http.middlewares.modelcode-ratelimit.ratelimit.burst=50"
       - "traefik.http.middlewares.modelcode-blocker.plugin.blockpath.regex=^/(\\.git|\\.env|wp-admin|phpinfo\\.php)"
-
-      # ErrorPage middleware - Página 404 customizada
       - "traefik.http.middlewares.error-pages-404.errors.status=404"
       - "traefik.http.middlewares.error-pages-404.errors.service=error-page-404"
       - "traefik.http.middlewares.error-pages-404.errors.query=/{status}.html"
-
-      # Aplica no Dashboard
       - "traefik.http.routers.dashboard.middlewares=modelcode-auth,modelcode-compress"
 
-  # -------------------------------------------------------
-  # 3. PÁGINA 404 (ERROR PAGE)
-  # -------------------------------------------------------
   error-page-404:
     build:
       context: ./nginx-404
@@ -90,8 +64,6 @@ services:
       - "traefik.enable=true"
       - "traefik.http.routers.error-page-404.rule=Host(`${ERROR_404_DOMAIN}`)"
       - "traefik.http.services.error-page-404.loadbalancer.server.port=80"
-
-      # Catch-all router para rotas não encontradas (prioridade baixa)
       - "traefik.http.routers.catch-all.rule=HostRegexp(`{.+}`)"
       - "traefik.http.routers.catch-all.priority=1"
       - "traefik.http.routers.catch-all.middlewares=error-pages-404"

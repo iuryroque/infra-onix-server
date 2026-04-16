@@ -1,0 +1,33 @@
+pipeline {
+    agent any
+
+    options {
+        buildDiscarder(logRotator(numToKeepStr: '10'))
+        timeout(time: 30, unit: 'MINUTES')
+    }
+
+    stages {
+        stage('Deploy 01-edge') {
+            steps {
+                echo "Deploying Traefik..."
+                sh 'docker-compose up -d'
+            }
+        }
+
+        stage('Verify') {
+            steps {
+                echo "Checking containers..."
+                sh 'docker ps --filter "name=traefik" --filter "name=cloudflared" --filter "name=error-page-404"'
+            }
+        }
+    }
+
+    post {
+        success {
+            echo "Traefik deployed!"
+        }
+        failure {
+            echo "Deploy failed!"
+        }
+    }
+}

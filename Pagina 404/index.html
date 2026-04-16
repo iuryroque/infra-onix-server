@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="pt-pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>404 - Página Não Encontrada | Triadev</title>
+    <style>
+        :root {
+            --primary-blue: #2196F3;
+            --dark-blue: #0D47A1;
+            --text-color: #333;
+            --bg-color: #ffffff;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .container {
+            text-align: center;
+            padding: 2.5rem;
+            z-index: 1;
+            max-width: 600px;
+        }
+
+        .visual-404 {
+            position: relative;
+            margin-bottom: 2rem;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .triangle-icon {
+            width: 140px;
+            height: auto;
+            animation: float 4s ease-in-out infinite;
+            filter: drop-shadow(0 10px 15px rgba(33, 150, 243, 0.2));
+        }
+
+        h1 {
+            font-size: 8rem;
+            font-weight: 900;
+            line-height: 1;
+            color: var(--primary-blue);
+            margin: 0;
+            letter-spacing: -5px;
+            opacity: 0.1;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: -1;
+            user-select: none;
+        }
+
+        h2 {
+            font-size: 2.2rem;
+            margin-bottom: 1rem;
+            color: var(--dark-blue);
+            font-weight: 700;
+        }
+
+        p {
+            font-size: 1.1rem;
+            color: #555;
+            margin-bottom: 2.5rem;
+            line-height: 1.6;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 1rem 2rem;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            font-size: 1rem;
+        }
+
+        .btn-primary {
+            background-color: var(--primary-blue);
+            color: white;
+            box-shadow: 0 4px 15px rgba(33, 150, 243, 0.3);
+        }
+
+        .btn-primary:hover {
+            background-color: var(--dark-blue);
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(13, 71, 161, 0.4);
+        }
+
+        .btn-outline {
+            background-color: transparent;
+            color: var(--primary-blue);
+            border: 2px solid var(--primary-blue);
+        }
+
+        .btn-outline:hover {
+            background-color: rgba(33, 150, 243, 0.05);
+            transform: translateY(-3px);
+        }
+
+        /* Animação de flutuação */
+        @keyframes float {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            50% { transform: translateY(-20px) rotate(2deg); }
+        }
+
+        /* Elementos decorativos de fundo */
+        .bg-elements {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .dot {
+            position: absolute;
+            background-color: var(--primary-blue);
+            border-radius: 50%;
+            opacity: 0.05;
+        }
+
+        .footer-tag {
+            position: absolute;
+            bottom: 2rem;
+            font-size: 0.85rem;
+            color: #aaa;
+            width: 100%;
+            text-align: center;
+        }
+
+        @media (max-width: 480px) {
+            h1 { font-size: 6rem; }
+            h2 { font-size: 1.8rem; }
+            .button-group { flex-direction: column; }
+            .btn { width: 100%; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="bg-elements">
+        <div class="dot" style="width: 120px; height: 120px; top: 10%; left: 8%;"></div>
+        <div class="dot" style="width: 180px; height: 180px; bottom: -40px; right: -40px;"></div>
+        <div class="dot" style="width: 60px; height: 60px; top: 45%; right: 12%;"></div>
+    </div>
+
+    <div class="container">
+        <div class="visual-404">
+            <h1>404</h1>
+            <!-- Representação do Triângulo Impossível da Triadev -->
+            <svg class="triangle-icon" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M50 5L95 85H5L50 5Z" stroke="#2196F3" stroke-width="4" stroke-linejoin="round"/>
+                <path d="M50 25L80 80H20L50 25Z" stroke="#2196F3" stroke-width="2" stroke-linejoin="round"/>
+                <path d="M50 5L20 80M95 85L50 25M5 85L80 80" stroke="#2196F3" stroke-width="2" opacity="0.4"/>
+            </svg>
+        </div>
+
+        <h2>Destino impossível?</h2>
+        <p>A página que procura não existe, mas o seu próximo projeto sim. Na <strong>Triadev</strong>, transformamos ideias complexas em soluções reais.</p>
+        
+        <div class="button-group">
+            <!-- Link para o Site Principal / Portfólio atualizado -->
+            <a href="https://triadevsolutions.com.br" class="btn btn-primary">Ver o nosso Portfólio</a>
+            
+            <!-- Link para Contacto Directo atualizado -->
+            <a href="https://triadevsolutions.com.br/contato" class="btn btn-outline">Falar com um Especialista</a>
+        </div>
+    </div>
+
+    <div class="footer-tag">
+        Triadev Solutions &copy; 2024 - A Solução para o seu negócio
+    </div>
+
+    <script>
+        // Efeito de parallax subtil no fundo
+        document.addEventListener('mousemove', (e) => {
+            const dots = document.querySelectorAll('.dot');
+            const x = (e.clientX - window.innerWidth / 2) / 100;
+            const y = (e.clientY - window.innerHeight / 2) / 100;
+            
+            dots.forEach((dot, index) => {
+                const speed = (index + 1) * 2;
+                dot.style.transform = `translate(${x * speed}px, ${y * speed}px)`;
+            });
+        });
+    </script>
+</body>
+</html>

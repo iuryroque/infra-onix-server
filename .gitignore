@@ -1,0 +1,25 @@
+# Logs
+*.log
+docker-compose.log
+
+# Secrets
+.env.local
+.env.*.local
+
+# Docker
+*.tar
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vs/
+.idea/
+*.swp
+*.swo
+
+# Temp
+tmp/
+temp/
+*.tmp

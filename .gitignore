@@ -25,7 +25,6 @@ temp/
 *.tmp
 
 # Old structure (now reorganized)
-nginx-404/
 Pagina 404/
 docker-compose.old.yml
 projeto exemplo/

@@ -10,7 +10,7 @@ pipeline {
         stage('Deploy 01-edge') {
             steps {
                 echo "Deploying Traefik..."
-                sh 'docker-compose up -d'
+                sh 'cd 01-edge && docker-compose up -d'
             }
         }
 

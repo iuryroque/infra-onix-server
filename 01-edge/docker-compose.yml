@@ -48,13 +48,6 @@ services:
       - "traefik.http.middlewares.modelcode-ratelimit.ratelimit.average=100"
       - "traefik.http.middlewares.modelcode-ratelimit.ratelimit.burst=50"
       - "traefik.http.middlewares.modelcode-blocker.plugin.blockpath.regex=^/(\\.git|\\.env|wp-admin|phpinfo\\.php)"
-      - "traefik.http.middlewares.error-pages-404.errors.status=404"
-      - "traefik.http.middlewares.error-pages-404.errors.service=error-page-404"
-      - "traefik.http.middlewares.error-pages-404.errors.query=/{status}.html"
-      - "traefik.http.routers.catch-all.rule=HostRegexp(`{any:.*}`)"
-      - "traefik.http.routers.catch-all.entrypoints=web"
-      - "traefik.http.routers.catch-all.priority=1"
-      - "traefik.http.routers.catch-all.middlewares=error-pages-404"
 
   error-page-404:
     build:
@@ -64,8 +57,3 @@ services:
     networks:
       - devops-net
       - apps-net
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.services.error-page-404.loadbalancer.server.port=80"
-      - "traefik.http.routers.error-page-404.rule=Host(`404.triadevsolutions.com.br`)"
-      - "traefik.http.routers.error-page-404.service=error-page-404"

@@ -55,7 +55,6 @@ services:
       - "traefik.http.routers.catch-all.entrypoints=web"
       - "traefik.http.routers.catch-all.priority=1"
       - "traefik.http.routers.catch-all.middlewares=error-pages-404"
-      - "traefik.http.routers.catch-all.service=error-page-404"
 
   error-page-404:
     build:
